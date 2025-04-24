@@ -1,19 +1,33 @@
-name: Build and Publish image to Docker Hub
+name: Build Docker Image & Deploy Static Site
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-    publish_images:
-        runs-on: ubuntu-latest
-        steps:
-            - name: checkout
-              uses: actions/checkout@v4
-            - name: build image
-              run: docker build . -t anshu25/my-app:latest
-            - name: push image to docker hub
-              run: |
-                docker login -u anshu25 -p ${{secrets.DOCKER_HUB_TOKEN}}
-                docker push anshu25/my-app:latest
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    name: Build Docker Image & Deploy to Netlify
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t shortest-path-visualizer .
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Deploy Public Folder to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          netlify deploy --prod --dir=Public --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --site ${{ secrets.NETLIFY_SITE_ID }}
