@@ -14,4 +14,6 @@ jobs:
             - name: build image
               run: docker build . -t anshu25/my-app:latest
             - name: push image to docker hub
-              run: docker push anshu25/my-app:latest
+              run: |
+                docker login -u anshu25 -p ${{secrets.DOCKER_HUB_TOKEN}}
+                docker push anshu25/my-app:latest
